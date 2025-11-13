@@ -33,7 +33,15 @@ export async function upsertActivityDefinitions() {
   await db.query(`
     INSERT INTO activity_definition (slug, name, description, points, icon)
     VALUES 
-      ('${ActivityDefinition.EXAMPLE_ACTIVITY}', 'Example Activity', 'Example Activity', 0, 'message-circle')
+      ('${ActivityDefinition.COMMENT_CREATED}', 'Commented', 'Commented on an Issue/PR', 0, 'message-circle'),
+      ('${ActivityDefinition.ISSUE_ASSIGNED}', 'Issue Assigned', 'Got an issue assigned', 1, 'user-round-check'),
+      ('${ActivityDefinition.PR_REVIEWED}', 'PR Reviewed', 'Reviewed a Pull Request', 2, 'eye'),
+      ('${ActivityDefinition.ISSUE_OPENED}', 'Issue Opened', 'Raised an Issue', 2, 'circle-dot'),
+      ('${ActivityDefinition.PR_OPENED}', 'PR Opened', 'Opened a Pull Request', 1, 'git-pull-request-create-arrow'),
+      ('${ActivityDefinition.PR_MERGED}', 'PR Merged', 'Merged a Pull Request', 7, 'git-merge'),
+      ('${ActivityDefinition.PR_COLLABORATED}', 'PR Collaborated', 'Collaborated on a Pull Request', 2, NULL),
+      ('${ActivityDefinition.ISSUE_CLOSED}', 'Issue Closed', 'Closed an Issue', 0, NULL),
+      ('${ActivityDefinition.COMMIT_CREATED}', 'Commit Created', 'Pushed a commit', 0, 'git-commit-horizontal')
     ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, description = EXCLUDED.description, points = EXCLUDED.points, icon = EXCLUDED.icon;
   `);
 }
@@ -77,8 +85,8 @@ export async function addContributors(contributors: string[]) {
     `,
       batch.flatMap((c) => [
         c,
-        `https://gravatar.com/avatar/${c}`,
-        `https://example.com/${c}`,
+        `https://avatars.githubusercontent.com/${c}`,
+        `https://github.com/${c}`,
       ])
     );
 
@@ -112,5 +120,37 @@ export async function addActivities(activities: Activity[]) {
     );
 
     console.log(`Added ${result.affectedRows}/${batch.length} new activities`);
+  }
+}
+
+/**
+ * Update the role of bot contributors to 'bot'
+ * @param botUsernames - Array of bot usernames to update
+ */
+export async function updateBotRoles(botUsernames: string[]) {
+  if (botUsernames.length === 0) {
+    console.log("No bot users to update");
+    return;
+  }
+
+  const db = getDb();
+
+  // Remove duplicates
+  const uniqueBotUsernames = [...new Set(botUsernames)];
+
+  for (const batch of batchArray(uniqueBotUsernames, 1000)) {
+    const placeholders = batch.map((_, i) => `$${i + 1}`).join(", ");
+    const result = await db.query(
+      `
+      UPDATE contributor
+      SET role = 'bot'
+      WHERE username IN (${placeholders});
+    `,
+      batch
+    );
+
+    console.log(
+      `Updated ${result.affectedRows}/${batch.length} bot contributors`
+    );
   }
 }

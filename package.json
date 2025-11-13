@@ -1,7 +1,7 @@
 {
-  "name": "leaderboard-scraper-template",
+  "name": "leaderboard-github-scraper",
   "version": "1.0.0",
-  "description": "Starter kit for building a Leaderboard scraper",
+  "description": "GitHub scraper for Leaderboard",
   "type": "module",
   "scripts": {
     "db:prepare": "tsx scripts/prepare.ts",
@@ -13,23 +13,25 @@
   },
   "keywords": [
     "leaderboard",
+    "github",
     "scraper"
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ohcnetwork/leaderboard-scraper-template.git"
+    "url": "git+https://github.com/ohcnetwork/leaderboard-github-scraper.git"
   },
   "author": "Open Healthcare Network",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ohcnetwork/leaderboard-scraper-template/issues"
+    "url": "https://github.com/ohcnetwork/leaderboard-github-scraper/issues"
   },
-  "homepage": "https://github.com/ohcnetwork/leaderboard-scraper-template#readme",
+  "homepage": "https://github.com/ohcnetwork/leaderboard-github-scraper#readme",
   "packageManager": "pnpm@10.20.0",
   "dependencies": {
     "@electric-sql/pglite": "^0.3.14",
     "date-fns": "^4.1.0",
     "eslint": "^9.39.1",
+    "octokit": "^5.0.5",
     "tsx": "^4.20.6"
   },
   "devDependencies": {
