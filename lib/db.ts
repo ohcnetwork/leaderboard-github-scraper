@@ -79,14 +79,14 @@ export async function addContributors(contributors: string[]) {
   for (const batch of batchArray(contributors, 1000)) {
     const result = await db.query(
       `
-      INSERT INTO contributor (username, avatar_url, profile_url)
+      INSERT INTO contributor (username, avatar_url, social_profiles)
       VALUES ${getSqlPositionalParamPlaceholders(batch.length, 3)}
       ON CONFLICT (username) DO NOTHING;
     `,
       batch.flatMap((c) => [
         c,
         `https://avatars.githubusercontent.com/${c}`,
-        `https://github.com/${c}`,
+        JSON.stringify({ github: `https://github.com/${c}` }),
       ])
     );
 
