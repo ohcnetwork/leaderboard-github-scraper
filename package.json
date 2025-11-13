@@ -1,0 +1,39 @@
+{
+  "name": "leaderboard-scraper-template",
+  "version": "1.0.0",
+  "description": "Starter kit for building a Leaderboard scraper",
+  "type": "module",
+  "scripts": {
+    "db:prepare": "tsx scripts/prepare.ts",
+    "db:import": "tsx scripts/import.ts",
+    "db:scrape": "tsx scripts/scrape.ts",
+    "db:export": "tsx scripts/export.ts",
+    "db:all": "pnpm db:prepare && pnpm db:import && pnpm db:scrape && pnpm db:export",
+    "lint": "eslint"
+  },
+  "keywords": [
+    "leaderboard",
+    "scraper"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ohcnetwork/leaderboard-scraper-template.git"
+  },
+  "author": "Open Healthcare Network",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ohcnetwork/leaderboard-scraper-template/issues"
+  },
+  "homepage": "https://github.com/ohcnetwork/leaderboard-scraper-template#readme",
+  "packageManager": "pnpm@10.20.0",
+  "dependencies": {
+    "@electric-sql/pglite": "^0.3.14",
+    "date-fns": "^4.1.0",
+    "eslint": "^9.39.1",
+    "tsx": "^4.20.6"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "^5.9.3"
+  }
+}
