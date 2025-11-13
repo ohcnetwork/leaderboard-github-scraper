@@ -8,7 +8,6 @@
     "db:import": "tsx scripts/import.ts",
     "db:scrape": "tsx scripts/scrape.ts",
     "db:export": "tsx scripts/export.ts",
-    "db:all": "pnpm db:prepare && pnpm db:import && pnpm db:scrape && pnpm db:export",
     "lint": "eslint"
   },
   "keywords": [
