@@ -6,10 +6,10 @@ import { join } from "path";
 async function main() {
   const db = getDb();
 
-  // Check for FLAT_DATA_PATH environment variable
-  const flatDataPath = process.env.FLAT_DATA_PATH;
+  // Check for LEADERBOARD_DATA_PATH environment variable
+  const flatDataPath = process.env.LEADERBOARD_DATA_PATH;
   if (!flatDataPath) {
-    throw new Error("FLAT_DATA_PATH environment variable is not set");
+    throw new Error("LEADERBOARD_DATA_PATH environment variable is not set");
   }
 
   // Get all activity definitions managed by this scraper
@@ -41,7 +41,7 @@ async function main() {
   console.log(`Found ${activitiesByContributor.size} unique contributors`);
 
   // Create output directory
-  const outputDir = join(flatDataPath, "activities");
+  const outputDir = join(flatDataPath, "data", "github", "activities");
   console.log(`Creating output directory: ${outputDir}`);
   await mkdir(outputDir, { recursive: true });
 

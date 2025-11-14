@@ -5,13 +5,13 @@ import { join } from "path";
 import { existsSync } from "fs";
 
 async function main() {
-  // Check for FLAT_DATA_PATH environment variable
-  const flatDataPath = process.env.FLAT_DATA_PATH;
+  // Check for LEADERBOARD_DATA_PATH environment variable
+  const flatDataPath = process.env.LEADERBOARD_DATA_PATH;
   if (!flatDataPath) {
-    throw new Error("FLAT_DATA_PATH environment variable is not set");
+    throw new Error("LEADERBOARD_DATA_PATH environment variable is not set");
   }
 
-  const inputDir = join(flatDataPath, "activities");
+  const inputDir = join(flatDataPath, "data", "github", "activities");
   console.log(`Reading JSON files from: ${inputDir}`);
 
   // Check if directory exists
