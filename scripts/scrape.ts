@@ -712,8 +712,8 @@ function getActivitiesFromCommits(
 }
 
 async function main() {
-  const days = process.env.SCRAPE_DAYS ? parseInt(process.env.SCRAPE_DAYS) : 1;
-  const since = subDays(new Date(), days).toISOString();
+  const days = process.env.SCRAPE_DAYS && parseInt(process.env.SCRAPE_DAYS);
+  const since = days ? subDays(new Date(), days).toISOString() : undefined;
 
   for (const { name: repository } of await getRepositories(org, since)) {
     // Parallelize the fetching of activities from repository
