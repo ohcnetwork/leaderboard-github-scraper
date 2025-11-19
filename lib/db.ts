@@ -1,4 +1,10 @@
-import { Activity, ActivityDefinition } from "@/types/db";
+import {
+  Activity,
+  ActivityDefinition,
+  GlobalAggregate,
+  ContributorAggregateDefinition,
+  ContributorAggregate,
+} from "@/types/db";
 import { PGlite } from "@electric-sql/pglite";
 
 let dbInstance: PGlite | null = null;
@@ -151,6 +157,107 @@ export async function updateBotRoles(botUsernames: string[]) {
 
     console.log(
       `Updated ${result.affectedRows}/${batch.length} bot contributors`
+    );
+  }
+}
+
+/**
+ * Upsert global aggregate definitions to the database
+ */
+export async function upsertGlobalAggregateDefinitions() {
+  const db = getDb();
+
+  await db.query(`
+    INSERT INTO global_aggregate (slug, name, description, value)
+    VALUES 
+      ('pr_avg_tat', 'PR Avg. Turn-Around Time', 'Average time taken to get a PR merged since it has been opened', NULL)
+    ON CONFLICT (slug) DO UPDATE SET 
+      name = EXCLUDED.name, 
+      description = EXCLUDED.description;
+  `);
+}
+
+/**
+ * Upsert contributor aggregate definitions to the database
+ */
+export async function upsertContributorAggregateDefinitions() {
+  const db = getDb();
+
+  await db.query(`
+    INSERT INTO contributor_aggregate_definition (slug, name, description)
+    VALUES 
+      ('pr_avg_tat', 'PR Avg. Turn-Around Time', 'Average time taken to get a PR merged since it has been opened')
+    ON CONFLICT (slug) DO UPDATE SET 
+      name = EXCLUDED.name, 
+      description = EXCLUDED.description;
+  `);
+}
+
+/**
+ * Upsert global aggregates to the database
+ * @param aggregates - The global aggregates to upsert
+ */
+export async function upsertGlobalAggregates(aggregates: GlobalAggregate[]) {
+  if (aggregates.length === 0) {
+    return;
+  }
+
+  const db = getDb();
+
+  for (const batch of batchArray(aggregates, 1000)) {
+    const result = await db.query(
+      `
+      INSERT INTO global_aggregate (slug, name, description, value)
+      VALUES ${getSqlPositionalParamPlaceholders(batch.length, 4)}
+      ON CONFLICT (slug) DO UPDATE SET 
+        name = EXCLUDED.name, 
+        description = EXCLUDED.description, 
+        value = EXCLUDED.value;
+    `,
+      batch.flatMap((a) => [
+        a.slug,
+        a.name,
+        a.description,
+        a.value ? JSON.stringify(a.value) : null,
+      ])
+    );
+
+    console.log(
+      `Upserted ${result.affectedRows}/${batch.length} global aggregates`
+    );
+  }
+}
+
+/**
+ * Upsert contributor aggregates to the database
+ * @param aggregates - The contributor aggregates to upsert
+ */
+export async function upsertContributorAggregates(
+  aggregates: ContributorAggregate[]
+) {
+  if (aggregates.length === 0) {
+    return;
+  }
+
+  const db = getDb();
+
+  for (const batch of batchArray(aggregates, 1000)) {
+    const result = await db.query(
+      `
+      INSERT INTO contributor_aggregate (aggregate, contributor, value)
+      VALUES ${getSqlPositionalParamPlaceholders(batch.length, 3)}
+      ON CONFLICT (aggregate, contributor) DO UPDATE SET 
+        value = EXCLUDED.value;
+    `,
+      batch.flatMap((a) => [
+        a.aggregate,
+        a.contributor,
+        JSON.stringify(a.value),
+      ])
+    );
+
+    console.log(
+      `Upserted ${result.affectedRows}/${batch.length} contributor aggregates`
     );
   }
 }
