@@ -8,6 +8,7 @@
     "db:import": "tsx scripts/import.ts",
     "db:scrape": "tsx scripts/scrape.ts",
     "db:export": "tsx scripts/export.ts",
+    "db:pre-build": "tsx scripts/pre-build.ts",
     "lint": "eslint"
   },
   "keywords": [

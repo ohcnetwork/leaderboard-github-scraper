@@ -635,7 +635,11 @@ function activitiesFromPullRequests(
         occured_at: new Date(pullRequest.merged_at),
         link: pullRequest.url,
         points: null,
-        meta: {},
+        meta: {
+          pr_avg_tat:
+            new Date(pullRequest.merged_at).getTime() -
+            new Date(pullRequest.created_at).getTime(),
+        },
       });
     }
 
