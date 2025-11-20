@@ -1,5 +1,5 @@
 import { getDb } from "@/lib/db";
-import { Activity, ActivityDefinition } from "@/types/db";
+import { Activity, ActivityDefinition, ContributorBadge } from "@/types/db";
 import { mkdir, writeFile } from "fs/promises";
 import { join } from "path";
 
@@ -40,17 +40,17 @@ async function main() {
 
   console.log(`Found ${activitiesByContributor.size} unique contributors`);
 
-  // Create output directory
-  const outputDir = join(flatDataPath, "data", "github", "activities");
-  console.log(`Creating output directory: ${outputDir}`);
-  await mkdir(outputDir, { recursive: true });
+  // Create output directory for activities
+  const activitiesOutputDir = join(flatDataPath, "data", "github", "activities");
+  console.log(`Creating activities output directory: ${activitiesOutputDir}`);
+  await mkdir(activitiesOutputDir, { recursive: true });
 
-  // Write JSON files for each contributor
-  console.log("Writing JSON files...");
+  // Write JSON files for each contributor's activities
+  console.log("Writing activity JSON files...");
   let filesWritten = 0;
 
   for (const [contributor, contributorActivities] of activitiesByContributor) {
-    const filePath = join(outputDir, `${contributor}.json`);
+    const filePath = join(activitiesOutputDir, `${contributor}.json`);
     await writeFile(
       filePath,
       JSON.stringify(contributorActivities, null, 2),
@@ -66,7 +66,58 @@ async function main() {
   }
 
   console.log(
-    `✓ Successfully exported ${filesWritten} contributor activity files to ${outputDir}`
+    `✓ Successfully exported ${filesWritten} contributor activity files to ${activitiesOutputDir}`
+  );
+
+  // Export badges
+  console.log("\nQuerying badges from database...");
+  const badgesResult = await db.query<ContributorBadge>(
+    `SELECT * FROM contributor_badge WHERE badge = 'problem_solving'`
+  );
+  const badges = badgesResult.rows;
+  console.log(`Found ${badges.length} Problem Solving badges`);
+
+  // Group badges by contributor
+  console.log("Grouping badges by contributor...");
+  const badgesByContributor = new Map<string, ContributorBadge[]>();
+
+  for (const badge of badges) {
+    const contributor = badge.contributor;
+    if (!badgesByContributor.has(contributor)) {
+      badgesByContributor.set(contributor, []);
+    }
+    badgesByContributor.get(contributor)!.push(badge);
+  }
+
+  console.log(`Found ${badgesByContributor.size} contributors with badges`);
+
+  // Create output directory for badges
+  const badgesOutputDir = join(flatDataPath, "data", "github", "badges");
+  console.log(`Creating badges output directory: ${badgesOutputDir}`);
+  await mkdir(badgesOutputDir, { recursive: true });
+
+  // Write JSON files for each contributor's badges
+  console.log("Writing badge JSON files...");
+  let badgeFilesWritten = 0;
+
+  for (const [contributor, contributorBadges] of badgesByContributor) {
+    const filePath = join(badgesOutputDir, `${contributor}.json`);
+    await writeFile(
+      filePath,
+      JSON.stringify(contributorBadges, null, 2),
+      "utf-8"
+    );
+    badgeFilesWritten++;
+
+    if (badgeFilesWritten % 10 === 0) {
+      console.log(
+        `Progress: ${badgeFilesWritten}/${badgesByContributor.size} files written`
+      );
+    }
+  }
+
+  console.log(
+    `✓ Successfully exported ${badgeFilesWritten} contributor badge files to ${badgesOutputDir}`
   );
 }
 

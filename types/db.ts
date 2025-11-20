@@ -60,3 +60,25 @@ export interface ContributorAggregate {
   contributor: string; // FK to contributor.username
   value: AggregateValue;
 }
+
+export interface BadgeVariant {
+  description: string;
+  svg_url: string;
+  requirement?: string | null;
+}
+
+export interface BadgeDefinition {
+  slug: string;
+  name: string;
+  description: string;
+  variants: Record<string, BadgeVariant>;
+}
+
+export interface ContributorBadge {
+  slug: string; // Composite key: {badge}__{contributor}__{variant}
+  badge: string; // FK to badge_definition.slug
+  contributor: string; // FK to contributor.username
+  variant: string; // Key from badge_definition.variants
+  achieved_on: Date;
+  meta: Record<string, unknown> | null;
+}
