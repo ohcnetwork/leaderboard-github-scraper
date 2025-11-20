@@ -2,7 +2,10 @@ import {
   getDb,
   upsertContributorAggregates,
   upsertGlobalAggregates,
+  getPRMergedCounts,
+  upsertContributorBadges,
 } from "@/lib/db";
+import { ContributorBadge } from "@/types/db";
 
 async function calculateAndUpsertPRAvgTAT() {
   const db = getDb();
@@ -76,9 +79,59 @@ async function calculateAndUpsertPRAvgTAT() {
   }
 }
 
+async function awardProblemSolvingBadges() {
+  console.log("Awarding Problem Solving badges...");
+
+  // Get PR merged counts for all contributors
+  const prCounts = await getPRMergedCounts();
+  console.log(`Found ${prCounts.size} contributors with merged PRs`);
+
+  // Define badge thresholds
+  const thresholds = [
+    { variant: "1x", required: 2 },
+    { variant: "2x", required: 16 },
+    { variant: "3x", required: 128 },
+    { variant: "4x", required: 1024 },
+    { variant: "5x", required: 8192 },
+  ];
+
+  const badgesToAward: ContributorBadge[] = [];
+
+  // For each contributor, check which badge variants they qualify for
+  for (const [contributor, { count, first_merged_at }] of prCounts.entries()) {
+    for (const threshold of thresholds) {
+      if (count >= threshold.required) {
+        badgesToAward.push({
+          slug: `problem_solving__${contributor}__${threshold.variant}`,
+          badge: "problem_solving",
+          contributor,
+          variant: threshold.variant,
+          achieved_on: first_merged_at, // Use first merged PR date as achievement date
+          meta: {
+            pr_count: count,
+            threshold: threshold.required,
+            awarded_by: "automated",
+          },
+        });
+      }
+    }
+  }
+
+  console.log(`Awarding ${badgesToAward.length} badge variants...`);
+
+  if (badgesToAward.length > 0) {
+    await upsertContributorBadges(badgesToAward);
+  }
+
+  console.log("✓ Problem Solving badges awarded");
+}
+
 async function main() {
   // Calculate and store PR average turn-around time aggregates
   await calculateAndUpsertPRAvgTAT();
+
+  // Award Problem Solving badges
+  await awardProblemSolvingBadges();
 }
 
 main();
