@@ -103,6 +103,14 @@ async function getPRsAndReviews(repo: string, since?: string) {
                   state
                   submittedAt
                   url
+                  comments(first: 10) {
+                    nodes {
+                      id
+                      replyTo {
+                        id
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -130,6 +138,12 @@ async function getPRsAndReviews(repo: string, since?: string) {
                 state: string;
                 submittedAt: string | null;
                 url: string | null;
+                comments: {
+                  nodes: Array<{
+                    id: string;
+                    replyTo: { id: string } | null;
+                  }>;
+                };
               }>;
             };
           }>;
@@ -180,13 +194,21 @@ async function getPRsAndReviews(repo: string, since?: string) {
         created_at: pr.createdAt,
         merged_at: pr.mergedAt,
         merged_by: pr.mergedBy?.login ?? null,
-        reviews: pr.reviews.nodes.map((review) => ({
-          id: review.id,
-          author: review.author?.login ?? null,
-          state: review.state,
-          submitted_at: review.submittedAt,
-          html_url: review.url,
-        })),
+        reviews: pr.reviews.nodes
+          .filter((review) => {
+            // Keep reviews with no comments (pure APPROVED/CHANGES_REQUESTED)
+            if (review.comments.nodes.length === 0) return true;
+
+            // Keep reviews that have at least one non-reply comment
+            return review.comments.nodes.some((comment) => !comment.replyTo);
+          })
+          .map((review) => ({
+            id: review.id,
+            author: review.author?.login ?? null,
+            state: review.state,
+            submitted_at: review.submittedAt,
+            html_url: review.url,
+          })),
       });
     }
 
