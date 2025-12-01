@@ -714,6 +714,7 @@ function activitiesFromPullRequests(
         continue;
       }
 
+      const isSelfReview = review.author === pullRequest.author;
       activities.push({
         slug: `${ActivityDefinition.PR_REVIEWED}_${repo}#${pullRequest.number}_${review.state}_${review.id}`,
         contributor: review.author,
@@ -722,7 +723,7 @@ function activitiesFromPullRequests(
         text: pullRequest.title,
         occured_at: new Date(review.submitted_at!),
         link: review.html_url,
-        points: null,
+        points: isSelfReview ? 0 : null,
         meta: {},
       });
     }
