@@ -3,9 +3,12 @@
   "version": "1.0.0",
   "description": "GitHub scraper for Leaderboard",
   "type": "module",
-  "main": "./dist/manifest.js",
+  "main": "./dist/manifest.mjs",
+  "exports": {
+    ".": "./dist/manifest.mjs"
+  },
   "scripts": {
-    "build": "esbuild manifest.ts --bundle --platform=node --format=esm --outfile=dist/manifest.js --external:@leaderboard/core",
+    "build": "esbuild manifest.ts --bundle --platform=node --format=esm --outfile=dist/manifest.mjs --external:@leaderboard/core",
     "lint": "eslint"
   },
   "keywords": [
