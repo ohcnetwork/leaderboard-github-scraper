@@ -3,14 +3,9 @@
   "version": "1.0.0",
   "description": "GitHub scraper for Leaderboard",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/manifest.js",
   "scripts": {
-    "db:prepare": "tsx scripts/prepare.ts",
-    "db:import": "tsx scripts/import.ts",
-    "db:scrape": "tsx scripts/scrape.ts",
-    "db:export": "tsx scripts/export.ts",
-    "db:pre-build": "tsx scripts/pre-build.ts",
-    "build": "tsc --build",
+    "build": "esbuild manifest.ts --bundle --platform=node --format=esm --outfile=dist/manifest.js --external:@leaderboard/core",
     "lint": "eslint"
   },
   "keywords": [
@@ -40,6 +35,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
+    "esbuild": "^0.24.2",
     "typescript": "^5.9.3"
   }
 }
